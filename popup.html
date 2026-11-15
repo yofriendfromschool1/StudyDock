@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyDock</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="icons/icon48.png" alt="" width="36" height="36">
+      <div>
+        <h1>StudyDock</h1>
+        <p>Free Canvas study companion</p>
+      </div>
+    </div>
+    <button class="icon-button" id="open-options" type="button" aria-label="Open settings" title="Settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 8.9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.16.38.5.68.92.85H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.15Z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="popup-main">
+    <section class="card site-card" aria-labelledby="site-heading">
+      <div class="site-top">
+        <div class="site-copy">
+          <p class="eyebrow">Current site</p>
+          <h2 id="site-heading">Loading…</h2>
+        </div>
+        <span id="site-status" class="status-pill">Checking</span>
+      </div>
+      <p id="site-note" class="muted site-note">Reading this tab’s protection state.</p>
+      <div class="button-row">
+        <button id="toggle-site" class="btn btn-primary" type="button" disabled>Enable always-active tab</button>
+        <button id="reload-tab" class="btn btn-ghost" type="button" hidden>Reload tab</button>
+      </div>
+      <label class="switch-row site-wide-row">
+        <input type="checkbox" id="all-sites">
+        <span>
+          <strong>Always active everywhere</strong>
+          <small>Applies to every website you browse. Canvas course pages are protected automatically.</small>
+        </span>
+      </label>
+    </section>
+
+    <section class="card tools-card" aria-labelledby="tools-heading">
+      <h2 class="section-title" id="tools-heading">Tools</h2>
+
+      <label class="switch-row">
+        <input type="checkbox" id="enabled">
+        <span>
+          <strong>StudyDock enabled</strong>
+          <small>Master switch. Turning it off unloads the page guards and disables quiz recall.</small>
+        </span>
+      </label>
+
+      <label class="switch-row">
+        <input type="checkbox" id="quizLoaderEnabled">
+        <span>
+          <strong>Quiz Recall</strong>
+          <small>On a Canvas quiz, fills your best previous answers when you hover a question.</small>
+        </span>
+      </label>
+
+      <label class="switch-row">
+        <input type="checkbox" id="privacyGuardEnabled">
+        <span>
+          <strong>Privacy Guard</strong>
+          <small>Keeps Canvas tabs visible and suppresses focus and visibility signals.</small>
+        </span>
+      </label>
+
+      <label class="switch-row">
+        <input type="checkbox" id="showInjectedUI">
+        <span>
+          <strong>On-page toolbar</strong>
+          <small>Shows the movable StudyDock status toolbar on Canvas course pages.</small>
+        </span>
+      </label>
+
+      <div class="kiosk-row">
+        <div>
+          <strong>Kiosk bar</strong>
+          <small id="kiosk-note">Open this Canvas page in a kiosk-style frame. Available on Canvas pages.</small>
+        </div>
+        <button id="toggle-kiosk" class="btn btn-ghost" type="button" disabled>Canvas only</button>
+      </div>
+    </section>
+
+    <section class="card free-card" aria-label="Free software">
+      <div class="free-badge">100% free</div>
+      <p>No account, subscription, trial, usage limit, or tracking server. Every setting stays in this browser.</p>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span id="version">StudyDock</span>
+    <button id="open-options-link" class="link-button" type="button">Settings</button>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

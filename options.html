@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyDock Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="options-header">
+    <div class="brand">
+      <img src="icons/icon128.png" alt="" width="48" height="48">
+      <div>
+        <p class="eyebrow">StudyDock</p>
+        <h1>Settings</h1>
+        <p>Free, local, and account-free. Nothing is sent to a server.</p>
+      </div>
+    </div>
+    <span class="status-pill ok">100% free</span>
+  </header>
+
+  <main class="options-main">
+    <form id="settings-form">
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Always-active tab</h2>
+            <p>Keep selected tabs in the visible, focused state while they are in the background.</p>
+          </div>
+        </div>
+
+        <label class="switch-row">
+          <input type="checkbox" id="enabled">
+          <span>
+            <strong>Enable StudyDock</strong>
+            <small>Master switch for page guards, always-active behavior, and quiz recall.</small>
+          </span>
+        </label>
+
+        <label class="switch-row">
+          <input type="checkbox" id="all-sites">
+          <span>
+            <strong>Enable on all websites</strong>
+            <small>Adds the <code>*</code> wildcard. Use site exclusions below if a page misbehaves.</small>
+          </span>
+        </label>
+
+        <div class="field-grid two">
+          <label class="field">
+            <span>Always-active hosts</span>
+            <textarea id="hosts" rows="5" spellcheck="false" placeholder="example.com, *.example.edu"></textarea>
+            <small>One host per line or comma-separated. Wildcards such as <code>*.example.edu</code> are supported.</small>
+          </label>
+          <label class="field">
+            <span>Excluded hosts</span>
+            <textarea id="excludedHosts" rows="5" spellcheck="false" placeholder="docs.example.com"></textarea>
+            <small>Always-active stays off on these hosts, even when the all-sites wildcard is on.</small>
+          </label>
+        </div>
+
+        <details class="details-block">
+          <summary>Event blocking options</summary>
+          <div class="check-grid">
+            <label><input type="checkbox" id="visibility"> Block visibility events</label>
+            <label><input type="checkbox" id="focus"> Block focus events</label>
+            <label><input type="checkbox" id="blur"> Block blur events</label>
+            <label><input type="checkbox" id="mouseleave"> Block mouseleave</label>
+            <label><input type="checkbox" id="mouseout"> Block mouseout</label>
+            <label><input type="checkbox" id="pointercapture"> Block lostpointercapture</label>
+            <label><input type="checkbox" id="redirect"> Block hidden-page redirects</label>
+            <label><input type="checkbox" id="fullscreen"> Protect fullscreen state (experimental)</label>
+          </div>
+        </details>
+
+        <details class="details-block">
+          <summary>Per-host policies (advanced)</summary>
+          <label class="field">
+            <span>JSON policies</span>
+            <textarea id="policies" rows="7" spellcheck="false" placeholder='{"docs.google.com": ["blur", "mouseout"]}'></textarea>
+            <small>Each key is a hostname. Listed event names are not blocked on that host.</small>
+          </label>
+        </details>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Canvas tools</h2>
+            <p>These features run only on Canvas course pages or the sites you explicitly enable.</p>
+          </div>
+        </div>
+
+        <label class="switch-row">
+          <input type="checkbox" id="privacyGuardEnabled">
+          <span>
+            <strong>Privacy Guard</strong>
+            <small>Automatically applies always-active behavior on Canvas course pages and suppresses focus/visibility signals.</small>
+          </span>
+        </label>
+
+        <label class="switch-row">
+          <input type="checkbox" id="quizLoaderEnabled">
+          <span>
+            <strong>Quiz Recall</strong>
+            <small>Reads your own prior Canvas submissions and fills the best known answer when you hover a quiz question.</small>
+          </span>
+        </label>
+
+        <label class="switch-row">
+          <input type="checkbox" id="showInjectedUI">
+          <span>
+            <strong>On-page toolbar</strong>
+            <small>Shows the movable status toolbar on Canvas course pages.</small>
+          </span>
+        </label>
+
+        <label class="switch-row">
+          <input type="checkbox" id="badge">
+          <span>
+            <strong>Show ON/OFF badge</strong>
+            <small>Displays the current site state on the StudyDock toolbar button.</small>
+          </span>
+        </label>
+
+        <label class="field">
+          <span>Skip these hosts entirely</span>
+          <textarea id="blockedUrls" rows="4" spellcheck="false" placeholder="example.com, another.example.org"></textarea>
+          <small>StudyDock will not inject page guards or quiz recall on these hosts. One host per line or comma-separated.</small>
+        </label>
+      </section>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" id="save">Save settings</button>
+        <button type="button" class="btn btn-ghost" id="reset">Reset to defaults</button>
+        <span id="save-status" class="save-status" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <section class="card about-card">
+      <h2>About this build</h2>
+      <p>
+        StudyDock is a single Chromium extension. The always-active engine is merged with the Canvas page guard,
+        quiz loader, kiosk bar, and toolbar. There is no subscription, login, trial, usage counter, analytics endpoint,
+        or remote asset dependency.
+      </p>
+      <p class="muted">Version <span id="version">2.0.0</span> · Settings are stored with <code>chrome.storage.local</code>.</p>
+    </section>
+  </main>
+
+  <script src="options.js"></script>
+</body>
+</html>

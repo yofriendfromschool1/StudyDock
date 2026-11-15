@@ -1,0 +1,78 @@
+/* Tests:
+  http://www2.stat.duke.edu/~cc248/jsphylosvg/js/yui/tests/event/tests/manual/window-focus-test.html
+  https://page-visibility.vercel.app/
+  https://codepen.io/calebnance/full/nXPaKN
+  https://cdpn.io/tobiasdev/fullpage/oGewQR?anon=true&view=
+  https://oncode-frontend.github.io/tab_detector/
+*/
+
+/* one marker on the ISOLATED world's global object (per document; invisible to the page) */
+self.PROTECTED = true;
+
+let port;
+try {
+  port = document.getElementById('lwys-ctv-port');
+  port.remove();
+}
+catch (e) {
+  port = document.createElement('span');
+  port.id = 'lwys-ctv-port';
+  document.documentElement.append(port);
+}
+port.dataset.hidden = document.hidden;
+port.dataset.enabled = true;
+
+port.addEventListener('state', () => {
+  port.dataset.hidden = document.hidden;
+});
+
+const update = () => chrome.storage.local.get({
+  'enabled': true,
+  'blur': true,
+  'focus': true,
+  'redirect': true,
+  'mouseleave': true,
+  'mouseout': true,
+  'visibility': true,
+  'pointercapture': true,
+  'fullscreen': false,
+  'policies': null
+}, prefs => {
+  let hostname = location.hostname;
+  try {
+    hostname = parent.location.hostname;
+  }
+  catch (e) {}
+
+  prefs.policies = prefs.policies ?? {};
+  const policy = prefs.policies[hostname] || [];
+
+  port.dataset.enabled = prefs.enabled;
+  port.dataset.blur = policy.includes('blur') ? false : prefs.blur;
+  port.dataset.focus = policy.includes('focus') ? false : prefs.focus;
+  port.dataset.redirect = policy.includes('redirect') ? false : prefs.redirect;
+  port.dataset.mouseleave = policy.includes('mouseleave') ? false : prefs.mouseleave;
+  port.dataset.mouseout = policy.includes('mouseout') ? false : prefs.mouseout;
+  port.dataset.visibility = policy.includes('visibility') ? false : prefs.visibility;
+  port.dataset.pointercapture = policy.includes('pointercapture') ? false : prefs.pointercapture;
+  const fullscreen = policy.includes('fullscreen') ? false : prefs.fullscreen;
+  if (port.dataset.fullscreen !== undefined && (port.dataset.fullscreen === 'true') !== fullscreen) {
+    port.dataset.fullscreen = fullscreen;
+    port.dispatchEvent(new Event('fs'));
+  }
+  port.dataset.fullscreen = fullscreen;
+});
+update();
+chrome.storage.onChanged.addListener(update);
+
+/* non-visual state indication (accessibility):
+   the top-frame script reports itself to the worker (the badge shows ON);
+   the worker paints the forced states (R) itself, on click */
+if (window.top === window) {
+  chrome.runtime.sendMessage({
+    method: 'set-icon',
+    hostname: location.hostname
+  }).catch(e => {});
+}
+
+''
