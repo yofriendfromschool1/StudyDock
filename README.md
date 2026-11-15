@@ -368,6 +368,6 @@ To verify changes:
 
 ## License and attribution
 
-StudyDock is distributed under the Mozilla Public License 2.0. See [`LICENSE`](LICENSE) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+StudyDock is distributed under the MIT License. See [`LICENSE`](LICENSE) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 The always-active implementation is adapted from **Always Active Window v3**, licensed under MPL-2.0. The upstream source is retained in [`always-active/`](always-active) for provenance; runtime copies live in `content/` and carry source notes at the top of each adapted file.
