@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-StudyDock is distributed under the Mozilla Public License 2.0. See [`LICENSE`](LICENSE).
+StudyDock is distributed under the MIT License. See [`LICENSE`](LICENSE).
 
 ## Always Active Window / Always Active Tab v3
 
@@ -15,9 +15,9 @@ The always-active engine in `content/always-active-page.js` and the state bridge
 
 The upstream source tree remains in this repository for provenance and license compliance. It is not loaded by the extension at runtime.
 
-## Canvas Quiz Loader logic
+## Quiz Recall logic
 
-The quiz-loading logic supplied with the original repository (`quizanswers.js`) was adapted into `content/quiz-loader.js`.
+The quiz-loading logic is implemented in `content/quiz-loader.js`.
 
 Modifications include:
 
@@ -25,7 +25,6 @@ Modifications include:
 - Added a strict Canvas quiz URL guard.
 - Added settings checks, blocked-host checks, request/response error handling, and a question-DOM wait.
 - Added null/undefined guards around Canvas's submission and question DOM shapes.
-- Removed paid/feature-gate coupling.
 - Added `studyDockFilled` markers so user edits are preserved.
 
 The quiz loader makes same-origin Canvas API requests from the Canvas page and has no external runtime dependency.

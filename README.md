@@ -1,248 +1,373 @@
 # StudyDock
 
-**StudyDock** is a free, local-first Chromium extension that combines an always-active tab engine, a Canvas page guard, quiz answer recall, an on-page status toolbar, and an optional kiosk-style frame in one product.
+**StudyDock** is a free, local-first Chromium extension for Canvas study sessions. It combines an always-active tab engine, a Canvas privacy guard, quiz answer recall, a movable on-page status toolbar, and an optional kiosk-style frame in one extension.
 
-
-## What it does
-
-### Always-active tab
-
-The always-active engine is adapted from the Always Active Tab / Always Active Window v3 implementation in [`always-active/v3`](always-active/v3). It keeps a page in the visible and focused state while its tab is in the background:
-
-- Spoofs `document.visibilityState`, `document.webkitVisibilityState`, `document.hidden`, and `document.webkitHidden`.
-- Forces `document.hasFocus()` to return true.
-- Blocks focus, blur, visibility, pagehide/pageshow, mouseleave/mouseout, and pointer-capture events.
-- Blocks hidden-page redirects and can preserve the page's fullscreen state.
-- Supports per-site host lists, wildcards, exclusions, and per-host event policies.
-
-Canvas course pages are protected automatically. Other sites are opt-in from the popup, or can be enabled globally in Settings.
-
-### Canvas Privacy Guard
-
-On Canvas course pages (`/courses/<id>/...`), StudyDock adds a Canvas-specific suppression layer:
-
-- Blocks focus/visibility event delivery to Canvas quiz UIs.
-- Removes hidden accessibility spans that can act as simple attention detectors.
-- Applies the always-active engine automatically when Privacy Guard is enabled.
-- Can be turned off without removing the extension or signing in.
-
-### Quiz Recall (Canvas Quiz Loader integration)
-
-The quiz-loading logic that existed in the paid build is now the free **Quiz Recall** feature:
-
-- Runs only on `/courses/<course>/quizzes/<quiz>/take` pages.
-- Reads the current user's own prior submission history through the Canvas API.
-- Finds the best-scoring answer for each question.
-- Fills the answer when the question is hovered.
-- Never submits the quiz and never sends data to an external server.
-
-This is the integrated Canvas Quiz Loader functionality, renamed and made free. It defaults to on and can be disabled in the popup or Settings.
-
-### On-page toolbar
-
-On Canvas course pages, a small movable toolbar shows the live state of:
-
-- Always-active tab
-- Privacy Guard
-- Quiz Recall
-- Hidden-detector cleanup
-
-The toolbar can be dragged, minimized, hidden, or disabled in Settings. Its **Settings** button opens the StudyDock options page.
-
-### Kiosk bar
-
-The optional kiosk bar opens the current Canvas page inside a kiosk-style frame with a StudyDock header and Restart/Exit controls. It is a visual session tool, not a bypass for a real lockdown browser or proctoring agent.
-
-### Per-site control
-
-The popup provides:
-
-- Current-site status and a one-click always-active toggle.
-- An “always active everywhere” wildcard.
-- Master pause switch.
-- Quiz Recall, Privacy Guard, and toolbar switches.
-- Kiosk bar controls on Canvas pages.
-
-The full settings page adds host lists, exclusions, blocked hosts, event-blocking options, and per-host policies.
+StudyDock has no account system, no subscription, no trial, no usage limit, and no backend.
 
 ---
 
-## Free guarantee
+## Highlights
 
-This build is intentionally free:
+- **Always-active tabs** — keeps selected pages in the visible and focused state while their tab is in the background.
+- **Canvas Privacy Guard** — suppresses Canvas focus/visibility signals on course pages and cleans hidden attention-detector spans.
+- **Quiz Recall** — reads your own prior Canvas quiz submissions and fills the best known answer when you hover a question.
+- **On-page toolbar** — shows the live protection state on Canvas course pages.
+- **Kiosk bar** — opens a Canvas page inside a StudyDock kiosk-style frame.
+- **Per-site control** — enable protection for one host, a wildcard, or every website, with exclusions and per-host policies.
+- **Local-only settings** — stored with `chrome.storage.local`; nothing is sent to a StudyDock server.
 
-- No paywall, pricing page, purchase flow, subscription, trial, or license check.
-- No login, email capture, device registration, or account requirement.
-- No usage counters, feature entitlements, or premium tiers.
-- No analytics client, install IDs, A/B pricing, or remote configuration.
-- No paid runtime dependencies.
-- No remote CSS, fonts, images, or scripts. The extension does not contact a StudyDock server because there is none.
+---
 
-The only network request the extension makes is the Canvas API request used by Quiz Recall, sent from the Canvas page to the same Canvas origin and only when you enable that feature.
+## Requirements
 
-Legacy paid/account storage keys from the previous build are deleted during upgrade. Settings that still apply are preserved.
+- A Chromium-based browser with Manifest V3 support: Chrome, Chromium, Edge, Brave, or Opera.
+- Chrome/Chromium **111 or newer** is recommended.
+- Quiz Recall requires Canvas classic quiz pages with prior submissions and Canvas API access.
 
 ---
 
 ## Installation
 
-Requires a Chromium-based browser with Manifest V3 support (Chrome, Edge, Brave, Opera, Chromium). Chrome/Chromium 111 or newer is recommended.
+StudyDock is loaded as an unpacked extension. There is no build step and no package installation.
 
 1. Download or clone this repository.
-2. Open `chrome://extensions` (or `edge://extensions`).
-3. Enable **Developer mode**.
+2. Open your browser's extension page:
+   - Chrome/Chromium: `chrome://extensions`
+   - Edge: `edge://extensions`
+   - Brave: `brave://extensions`
+   - Opera: `opera://extensions`
+3. Turn on **Developer mode**.
 4. Choose **Load unpacked**.
-5. Select this directory (the directory containing `manifest.json`).
-6. Pin **StudyDock** to the toolbar.
+5. Select the project directory containing `manifest.json`.
+6. Pin **StudyDock** to the toolbar for quick access.
 
-The extension requests host access to all HTTP/HTTPS sites because it must be able to inject into any Canvas instance and any host you explicitly enable. Settings are stored locally with `chrome.storage.local`.
+### Updating
 
-### First run
+Replace the files in the same directory, then click **Reload** on the StudyDock card in the extensions page. Open tabs pick up content-script changes after a reload.
 
-- Open the StudyDock popup.
-- Canvas course pages are protected automatically when Privacy Guard is on.
-- To keep a non-Canvas site active, use **Enable always-active here**.
-- To apply always-active to every site, turn on **Always active everywhere**.
-- Use **Settings** for host lists, exclusions, blocked hosts, event options, and policies.
+### Permissions
+
+| Permission | Why it is needed |
+| --- | --- |
+| `storage` | Saves settings, host lists, and feature switches locally. |
+| `scripting` | Registers and applies the page guards on matching tabs. |
+| `activeTab` | Reads the current tab when you open the popup or toggle a site. |
+| `*://*/*` host access | Supports any Canvas institution and any website you explicitly enable. |
+
+StudyDock does not request access to a remote StudyDock service because none exists.
 
 ---
 
-## Architecture
+## First run
 
-The paid build had a payment server, analytics, A/B pricing, login/account UI, remote assets, and separate content-script paths. This rebuild removes all of that and uses one small, local architecture:
+1. Open the StudyDock popup.
+2. Canvas course pages (`/courses/<id>/...`) are protected automatically when **Privacy Guard** is on.
+3. On any other website, click **Enable always-active here** to protect that host.
+4. To protect every website, enable **Always active everywhere**.
+5. Open **Settings** for host lists, exclusions, blocked hosts, event options, and policies.
+
+The toolbar badge shows `ON` or `OFF` for the current site. Clicking the StudyDock toolbar button opens the popup.
+
+---
+
+## How to use
+
+### Popup
+
+The popup is the quick-control surface for the current tab.
+
+| Control | What it does |
+| --- | --- |
+| **Current site status** | Shows whether the site is always-active, Canvas-protected, excluded, skipped, or not protected. |
+| **Enable/disable always-active here** | Adds or removes the current host from the always-active list. If the all-sites wildcard is on, disabling adds a host exclusion. |
+| **Reload tab** | Appears when a protection change needs a page reload to finish applying. |
+| **Always active everywhere** | Adds the `*` wildcard, enabling always-active behavior on every website. |
+| **StudyDock enabled** | Master switch. Turning it off unloads new page guards and disables Quiz Recall. |
+| **Quiz Recall** | Enables or disables automatic answer recall on Canvas quiz pages. |
+| **Privacy Guard** | Enables or disables Canvas focus/visibility suppression and automatic Canvas protection. |
+| **On-page toolbar** | Shows or hides the Canvas status toolbar. |
+| **Kiosk bar** | Injects or removes the kiosk-style frame on the current Canvas page. |
+| **Settings** | Opens the full options page. |
+
+### Always-active tabs
+
+Always-active behavior can be configured in three ways:
+
+1. **Single site** — enable the current host from the popup.
+2. **Host list / wildcard** — add hosts such as `example.edu` or `*.example.edu` in Settings.
+3. **All websites** — enable the `*` wildcard.
+
+Canvas course pages are automatically covered when Privacy Guard is on, even if the host is not in the always-active list.
+
+The always-active engine:
+
+- reports `document.visibilityState` as `visible`;
+- reports `document.hidden` as `false`;
+- reports `document.hasFocus()` as `true`;
+- blocks focus, blur, visibility, pagehide/pageshow, mouseleave/mouseout, and lost-pointer-capture events;
+- can block hidden-page redirects;
+- can preserve fullscreen state while the tab is hidden;
+- supports per-host event policies for sites that need specific events left alone.
+
+### Canvas Privacy Guard
+
+Privacy Guard activates automatically on Canvas course pages that match `/courses/<id>/...`.
+
+On those pages, StudyDock:
+
+- blocks Canvas focus/visibility event delivery used by quiz UIs;
+- removes hidden accessibility spans that can act as simple attention detectors;
+- applies the always-active engine while the tab is in the background;
+- exposes its status in the on-page toolbar.
+
+Privacy Guard can be disabled in the popup or Settings without uninstalling the extension.
+
+### Quiz Recall
+
+Quiz Recall runs only on Canvas quiz take pages matching:
 
 ```text
-manifest.json                 MV3 manifest, permissions, static quiz-loader match
-background.js                 service worker: settings, host registration, badge,
-                              migration, message handling
-popup.html/.css/.js           unified current-site and feature controls
-options.html/.css/.js         full settings page
-styles.css                    shared UI design system
-content/
-  always-active-page.js       MAIN-world always-active engine (adapted v3)
-  always-active-isolated.js   ISOLATED-world settings/port bridge
-  canvas-guard-page.js        Canvas event guard, detector cleanup, toolbar
-  canvas-guard-isolated.js    kiosk frame, settings shortcut, UI visibility
-  quiz-loader.js              Canvas Quiz Recall
-always-active/                upstream MPL-2.0 source for provenance
-icons/                        StudyDock brand mark and toolbar icons
+/courses/<course-id>/quizzes/<quiz-id>/take
 ```
 
-The page engine and Canvas guard share one hidden `#studydock-port` element. The isolated world publishes storage-derived state onto that element; the MAIN world reads it. This preserves the Always Active Tab communication model while avoiding a second visibility/focus implementation.
+When you hover a question, StudyDock:
 
-Dynamic content scripts are registered by `background.js` for:
+1. Reads your own prior submission history through the Canvas API.
+2. Finds the best-scoring attempt for each question.
+3. Fills the answer into the quiz form.
+4. Leaves the answer editable.
+5. Never submits the quiz.
+
+Supported question types include multiple choice, true/false, multiple answers, matching, fill-in-the-blank, multiple blanks, numerical, calculated, and essay questions where Canvas exposes the corresponding form fields.
+
+Quiz Recall is enabled by default and can be turned off in the popup or Settings. It does not send quiz data anywhere except the same-origin Canvas API request.
+
+### On-page toolbar
+
+On Canvas course pages, StudyDock adds a small movable toolbar.
+
+- Click the `i` button to open the protection panel.
+- The panel reports Always-active tab, Privacy Guard, Quiz Recall, and detector cleanup state.
+- Drag the toolbar or panel header to reposition it.
+- Click `×` to hide the toolbar for the current page load.
+- Click **Settings** in the panel to open the options page.
+
+The toolbar can be disabled globally with **On-page toolbar** in the popup or Settings.
+
+### Kiosk bar
+
+On a Canvas page with the page guard active:
+
+1. Open the popup.
+2. Click **Inject** under **Kiosk bar**.
+3. The current Canvas page opens inside a StudyDock frame.
+4. Use **Restart** to reload the framed page.
+5. Use **Exit kiosk** or the popup's **Remove** button to close it.
+
+The kiosk bar is a visual session tool. It does not bypass a real lockdown browser or third-party proctoring software.
+
+### Settings page
+
+The options page contains the full configuration.
+
+| Section | Options |
+| --- | --- |
+| **Always-active tab** | Master switch, all-sites wildcard, host list, excluded hosts. |
+| **Event blocking** | Visibility, focus, blur, mouseleave, mouseout, lostpointercapture, hidden-page redirects, fullscreen. |
+| **Per-host policies** | JSON object mapping hostnames to event names that should not be blocked. |
+| **Canvas tools** | Privacy Guard, Quiz Recall, on-page toolbar, badge display. |
+| **Skip hosts** | Hosts where StudyDock should not inject page guards or Quiz Recall. |
+| **Save / Reset** | Save settings or restore defaults. |
+
+#### Host list syntax
+
+One host per line or comma-separated:
+
+```text
+example.com
+*.example.edu
+docs.example.org
+```
+
+- `example.com` also covers `www.example.com`.
+- `*.example.edu` covers `example.edu` and any subdomain.
+- `*` enables always-active on every website.
+- Invalid or duplicate entries are removed when saved.
+
+#### Excluded hosts
+
+Excluded hosts keep always-active off even when the `*` wildcard is enabled. They do not disable Quiz Recall or the on-page toolbar.
+
+#### Skip hosts
+
+Skip hosts prevent StudyDock from injecting page guards or Quiz Recall on those hosts. This is the strongest per-host opt-out.
+
+#### Per-host policies
+
+Example:
+
+```json
+{
+  "docs.example.com": ["blur", "mouseout"],
+  "calendar.example.com": ["visibility"]
+}
+```
+
+Listed events are not blocked on that host. Valid event names are `visibility`, `focus`, `blur`, `mouseleave`, `mouseout`, `pointercapture`, `redirect`, and `fullscreen`.
+
+---
+
+## Privacy
+
+StudyDock is designed to keep data local.
+
+- Settings and host lists are stored in `chrome.storage.local`.
+- There is no install ID, account, analytics endpoint, remote configuration, or telemetry.
+- There are no remote stylesheets, fonts, images, or scripts.
+- The only network request is the same-origin Canvas API request used by Quiz Recall.
+- Quiz Recall reads only the current user's own submission history from the Canvas instance already open in the browser.
+
+---
+
+## How it works
+
+StudyDock uses two script worlds per page:
+
+- **MAIN world** — applies page-visible changes such as visibility/focus spoofing, event blocking, detector cleanup, and the toolbar DOM.
+- **ISOLATED world** — reads `chrome.storage.local`, computes host/site state, and publishes it to the MAIN world through a hidden shared port element.
+
+The MAIN and ISOLATED worlds share the hidden `#studydock-port` element. This lets the always-active engine and the Canvas guard read the same state without duplicating the visibility/focus implementation.
+
+### Dynamic page guards
+
+The service worker registers page guards for:
 
 - Canvas course pages: `*://*/courses/*`
-- Every host in the always-active list, including `*`
-- Exclusions from the blocked-host list
+- Every host in the always-active list
+- All sites when `*` is enabled
+- Blocked hosts as exclusions
 
-The static Quiz Recall script matches:
+When a site is enabled from the popup, StudyDock also injects the guards into the current tab immediately, without waiting for a reload.
 
-- `*://*/courses/*/quizzes/*/take*`
+### Quiz Recall script
 
----
+Quiz Recall is a static content script that matches only:
 
-## Implementation plan used for this rebuild
+```text
+*://*/courses/*/quizzes/*/take*
+```
 
-1. Audit the existing paid extension: identify payment, analytics, account, remote asset, and content-script dependencies.
-2. Choose the StudyDock brand; create a local mark and icons; replace all user-facing copy.
-3. Remove payment/account/analytics paths; delete remote CSS, fonts, images, and dead marketing pages.
-4. Vendor the Always Active v3 engine into `content/`; merge its state bridge with the Canvas guard.
-5. Integrate the existing quiz-loader logic as a free, default-on content script with a single toggle.
-6. Rebuild the popup and options page around the merged feature set.
-7. Validate syntax and manifest, load the extension in Chromium, and exercise popup, options, host toggles, immediate injection, toolbar, kiosk, and quiz filling.
-8. Document setup, changes, and limitations.
+It checks the master switch, the Quiz Recall switch, and the skip-host list before running.
 
----
+### File map
 
-## What changed
-
-### Added
-
-- Single **StudyDock** brand, local SVG/PNG mark, updated manifest name/description/icons.
-- Unified popup with current-site state, always-active toggle, global wildcard, master pause, and feature switches.
-- Full options page with host lists, exclusions, blocked hosts, event options, and policies.
-- Shared hidden port between the always-active engine and Canvas guard.
-- Live on-page status panel that reflects actual storage state.
-- Free Quiz Recall with a safe URL guard, error handling, and query/answer fallbacks.
-- Immediate injection when a site is enabled from the popup.
-- Legacy storage migration and cleanup of paid/account/analytics keys.
-
-### Removed
-
-- Payment, pricing, purchase, upgrade, subscription, cancellation, and lifetime-plan UI.
-- Login/logout, email verification, device IDs, account management, and support Discord links.
-- Payment/analytics clients, remote configuration calls, and uninstall tracking.
-- Remote stylesheets, fonts, demo videos, payment logos, testimonials, and branded screenshots.
-- External-message webhook handler and cross-origin extension messaging entry.
-- Paid-gate checks in background, popup, content, and quiz scripts.
-- The old forced reload loop and paid-only feature locks.
-
-### Changed
-
-- The toolbar action now opens the unified popup instead of immediately toggling the current site. The per-site toggle is one click inside the popup.
-- The always-active engine and Canvas guard now share state through one port, so visibility/focus spoofing is not implemented twice.
-- Quiz loading is enabled by default and controlled by one `quizLoaderEnabled` setting (legacy `saveCorrectAnswers` is migrated).
-- Dynamic scripts no longer use `matchOriginAsFallback` because Canvas path-scoped matches require a `*` path for that flag. The normal document-start injection path is preserved.
+```text
+manifest.json                 MV3 manifest and permissions
+background.js                 settings, registration, badge, messaging
+popup.html/.css/.js           current-site and quick feature controls
+options.html/.css/.js         full settings page
+styles.css                    shared UI styles
+content/
+  always-active-page.js       MAIN-world always-active engine
+  always-active-isolated.js   ISOLATED-world settings/state bridge
+  canvas-guard-page.js        Canvas event guard, cleanup, toolbar
+  canvas-guard-isolated.js    kiosk frame, settings shortcut, UI visibility
+  quiz-loader.js              Canvas Quiz Recall
+icons/                        StudyDock mark and extension icons
+always-active/                upstream MPL-2.0 source for provenance
+```
 
 ---
 
-## Preserved behavior
+## Troubleshooting
 
-- Always Active Tab's visibility/focus spoofing, event blocking, redirect protection, fullscreen option, host lists, wildcards, policies, and badge.
-- Canvas page guard, hidden-detector cleanup, movable toolbar, and settings shortcut.
-- Kiosk-style frame with restart and exit.
-- Quiz answer recall from prior submissions, including multiple-choice, multiple-answer, matching, fill-in-blank, multiple-blank, numerical/formula, and essay fallbacks.
-- Existing settings for blocked URLs, toolbar visibility, privacy guard, and quiz answers.
+### StudyDock does not activate on a website
+
+- Open the popup and check whether the site is **Excluded** or **Skipped**.
+- Click **Enable always-active here**.
+- Or enable **Always active everywhere**.
+- Reload the tab if the content scripts were not present when the setting changed.
+
+### Canvas page is not protected
+
+- Confirm **Privacy Guard** is enabled.
+- Confirm the page URL contains `/courses/<id>/`.
+- Confirm the host is not in the skip list.
+- Reload the page after changing settings.
+
+### On-page toolbar is missing
+
+- Confirm you are on a Canvas course page.
+- Enable **On-page toolbar** in the popup or Settings.
+- Confirm the master switch is on.
+- Reload the page.
+
+### Quiz Recall does not fill answers
+
+- Confirm the page is a quiz take page.
+- Confirm Quiz Recall is enabled and the host is not skipped.
+- Confirm you have at least one prior submission for that quiz.
+- Classic Canvas quizzes with accessible submission history work best.
+- Reload the quiz page after changing the setting.
+
+### A website behaves incorrectly with always-active mode
+
+- Add the host to **Excluded hosts** in Settings.
+- Or add it to **Skip hosts** to stop all StudyDock injection there.
+- Use per-host policies to leave specific events unblocked.
+- Disable Privacy Guard if the issue is limited to Canvas.
+
+### Kiosk bar is unavailable
+
+- Confirm the page is a Canvas course page.
+- Confirm the page guard is active for the tab.
+- Reload the page and reopen the popup.
+
+### Badge shows OFF
+
+The current host is not covered by the always-active list and is not an automatically protected Canvas course page. Enable the site or turn on the all-sites wildcard.
 
 ---
 
 ## Limitations
 
-- **Chromium only in this package.** The manifest targets Chromium MV3. Firefox packaging would need a separate manifest/API pass.
-- **The always-active engine cannot control browser-level throttling, OS focus, screenshots, server-side telemetry, or third-party proctoring software.** It only changes page-visible state.
-- **Quiz Recall depends on Canvas's classic quiz submission-history APIs.** New Quizzes, institutional API restrictions, or courses with no prior attempts may not return usable data.
-- **Kiosk mode is visual only.** It does not bypass a real kiosk app or lockdown browser.
-- **The action click gesture changed** because the product now has a unified popup (a manifest popup suppresses `chrome.action.onClicked`). Use the popup's site toggle.
-- **Some sites may misbehave with visibility spoofing.** Add the host to Excluded hosts or Blocked hosts, or disable Privacy Guard for Canvas.
-- **Disabling protections on an open tab may require a reload** because page-world overrides cannot be cleanly uninstalled in place. The popup exposes a Reload tab button when needed.
-- **No cloud sync.** Settings are local to the browser profile.
+- **Chromium MV3 only.** Firefox and Safari would need separate packaging.
+- **Page-level protection only.** StudyDock changes page-visible state; it cannot control browser throttling, OS focus, screenshots, network telemetry, or third-party proctoring software.
+- **Quiz Recall depends on Canvas APIs and prior submissions.** New Quizzes, restricted API access, or courses without prior attempts may not return usable data.
+- **Kiosk mode is visual.** It does not bypass a real lockdown browser or proctoring agent.
+- **Some changes require a reload.** Page-world overrides cannot be fully uninstalled from an already-running document.
+- **Settings are local to the browser profile.** There is no cloud sync.
+- **Some sites may dislike visibility spoofing.** Use exclusions, skip hosts, or per-host policies.
+
+Use StudyDock in accordance with your institution's academic-integrity and acceptable-use rules.
 
 ---
 
-## Verification
+## Development
 
-The rebuild was checked with:
+There is no build step. The extension runs directly from this directory.
+
+Useful checks:
 
 ```bash
-for f in background.js popup.js options.js content/*.js; do node --check "$f"; done
+for f in background.js popup.js options.js content/*.js; do
+  node --check "$f"
+done
 jq . manifest.json
 ```
 
-It was also loaded unpacked in Chromium 156 with a local Canvas-shaped fixture and verified for:
+To verify changes:
 
-- Service worker registration with no console errors.
-- Dynamic content-script registration for Canvas paths and explicit hosts.
-- Always-active port state and blocked visibility event delivery.
-- Canvas toolbar and status panel.
-- Quiz Recall filling a prior answer.
-- Popup rendering with an active Canvas tab, site toggle, and free-copy checks.
-- Options save round-trip.
-- Immediate injection after enabling a host from the popup.
-- Kiosk bar inject/remove.
-
----
-
-## Privacy and responsibility
-
-StudyDock stores settings in `chrome.storage.local`. It does not create an install ID, contact an analytics service, or send page content anywhere. Quiz Recall uses the Canvas session already present in the browser.
-
-Use StudyDock in accordance with your institution's academic-integrity and acceptable-use rules. The extension changes what a page can observe; it does not make cheating acceptable or undetectable in every environment.
+1. Reload the extension from `chrome://extensions`.
+2. Reload a Canvas-shaped test page.
+3. Open the popup and confirm the current-site status.
+4. Open the on-page toolbar and confirm the four status rows.
+5. Test Quiz Recall on a quiz take page with prior submissions.
 
 ---
 
 ## License and attribution
 
-This project is distributed under the Mozilla Public License 2.0. See [`LICENSE`](LICENSE) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+StudyDock is distributed under the Mozilla Public License 2.0. See [`LICENSE`](LICENSE) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-The always-active implementation is adapted from **Always Active Window v3** by the upstream authors, licensed under MPL-2.0. The upstream source is retained in [`always-active/`](always-active) for provenance; the runtime copies live in `content/` and are noted at the top of each adapted file.
+The always-active implementation is adapted from **Always Active Window v3**, licensed under MPL-2.0. The upstream source is retained in [`always-active/`](always-active) for provenance; runtime copies live in `content/` and carry source notes at the top of each adapted file.
